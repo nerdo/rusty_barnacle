@@ -27,10 +27,3 @@ mod tests {
         assert_eq!(result, "");
     }
 }
-
-// References
-// Testing I/O in Rust: https://users.rust-lang.org/t/whats-the-recommended-way-of-testing-i-o-functions/17282
-// Traits in Rust: https://www.youtube.com/watch?v=T0Xfltu4h3A&list=PLai5B987bZ9CoVR-QEIN9foz4QCJ0H2Y8
-// Closures in Rust: https://www.youtube.com/watch?v=kZXJvLfjUS4
-// AsRef trait: https://www.youtube.com/watch?v=iKFljZP6JD0
-// Mocking (Alteratives at the bottom of the article): https://blog.logrocket.com/guide-mocking-rust-mockall/
