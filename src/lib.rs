@@ -37,18 +37,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
+    fn it_finds_the_nearest_path_where_target_paths_exist() {
         let mut file_io = MockFileIO::new();
-        file_io.expect_exists().return_const(true);
+        let mut exists_values = vec![true, false];
+        file_io.expect_exists().returning(move |_| exists_values.pop().unwrap_or(false));
 
         let config = Config {
             file_io: &file_io,
             target_paths: vec!["node_modules"],
-            starting_path: "/home/user/code/project"
+            starting_path: "/home/user/code/project/subdir"
         };
 
         let result = find_nearest(&config);
 
-        assert_eq!(result, "");
+        assert_eq!(result, "/home/user/code/project/node_modules");
     }
 }
