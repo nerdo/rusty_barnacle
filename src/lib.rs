@@ -8,9 +8,12 @@ pub trait FileIO {
 }
 
 pub fn find_nearest<F: FileIO>(config: &Config<F>) -> String {
-    let mut cur_path = Path::new(config.starting_path);
+    let init_path_buf = Path::new(config.starting_path).join("_");
+    let mut cur_path = init_path_buf.as_path();
 
-    loop {
+    while let Some(parent_path) = cur_path.parent() {
+        cur_path = parent_path;
+
         for p in config.target_paths.iter() {
             if let Some(test_path) = cur_path.join(p).to_str() {
                 if config.file_io.exists(&test_path) {
@@ -18,12 +21,9 @@ pub fn find_nearest<F: FileIO>(config: &Config<F>) -> String {
                 }
             }
         }
-
-        cur_path = match cur_path.parent() {
-            Some(parent) => parent,
-            None => return String::new()
-        };
     }
+
+    String::new()
 }
 
 pub struct Config<'a, F: FileIO> {
