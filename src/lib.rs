@@ -39,17 +39,16 @@ mod tests {
     #[test]
     fn it_finds_the_nearest_path_where_target_paths_exist() {
         let mut file_io = MockFileIO::new();
-        let mut exists_values = vec![true, false];
-        file_io.expect_exists().returning(move |_| exists_values.pop().unwrap_or(false));
+        file_io.expect_exists().returning(|path| path == "/home/user/code/project/node_modules/.bin");
 
         let config = Config {
             file_io: &file_io,
-            target_paths: vec!["node_modules"],
-            starting_path: "/home/user/code/project/subdir"
+            target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
+            starting_path: "/home/user/code/project/src/app/components"
         };
 
         let result = find_nearest(&config);
 
-        assert_eq!(result, "/home/user/code/project/node_modules");
+        assert_eq!(result, "/home/user/code/project/node_modules/.bin");
     }
 }
