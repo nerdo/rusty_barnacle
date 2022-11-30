@@ -1,6 +1,6 @@
-use mockall::*;
-use mockall::predicate::*;
 use gtmpl_derive::Gtmpl;
+use mockall::predicate::*;
+use mockall::*;
 use std::path::Path;
 
 #[automock]
@@ -34,7 +34,7 @@ pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
                 if config.file_io.exists(&test_path) {
                     let nearest_match = NearestMatch {
                         Path: String::from(cur_path.to_str().unwrap()),
-                        Target: String::from(test_path)
+                        Target: String::from(test_path),
                     };
 
                     let output = gtmpl::template(config.template, nearest_match);
@@ -60,7 +60,7 @@ mod tests {
             file_io: &file_io,
             target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
             starting_path: "/home/user/code/project/src/app/components",
-            template: ""
+            template: "",
         };
 
         let result = find_nearest(&config);
@@ -71,17 +71,24 @@ mod tests {
     #[test]
     fn it_finds_the_nearest_path_where_target_paths_exist() {
         let mut file_io = MockFileIO::new();
-        file_io.expect_exists().returning(|path| path == "/home/user/code/project/node_modules/.bin");
+        file_io
+            .expect_exists()
+            .returning(|path| path == "/home/user/code/project/node_modules/.bin");
 
         let config = Config {
             file_io: &file_io,
             target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
             starting_path: "/home/user/code/project/src/app/components",
-            template: "Target: {{.Target}}, Path: {{.Path}}"
+            template: "Target: {{.Target}}, Path: {{.Path}}",
         };
 
         let result = find_nearest(&config);
 
-        assert_eq!(result, Some(String::from("Target: /home/user/code/project/node_modules/.bin, Path: /home/user/code/project")));
+        assert_eq!(
+            result,
+            Some(String::from(
+                "Target: /home/user/code/project/node_modules/.bin, Path: /home/user/code/project"
+            ))
+        );
     }
 }
