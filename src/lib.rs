@@ -17,9 +17,9 @@ pub struct Config<'a, F: FileIO> {
 
 #[derive(Gtmpl)]
 #[allow(non_snake_case)]
-struct NearestMatch<'a> {
-    Path: &'a str,
-    Target: &'a str,
+struct NearestMatch {
+    Path: String,
+    Target: String,
 }
 
 pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
@@ -33,12 +33,12 @@ pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
             if let Some(test_path) = cur_path.join(p).to_str() {
                 if config.file_io.exists(&test_path) {
                     let nearest_match = NearestMatch {
-                        Path: cur_path.to_str().unwrap(),
-                        Target: test_path
+                        Path: String::from(cur_path.to_str().unwrap()),
+                        Target: String::from(test_path)
                     };
 
-                    // let output = gtmpl::template(config.template, &nearest_match);
-                    // return Some(&output.unwrap());
+                    let output = gtmpl::template(config.template, nearest_match);
+                    return Some(output.unwrap());
                 }
             }
         }
@@ -60,7 +60,7 @@ mod tests {
             file_io: &file_io,
             target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
             starting_path: "/home/user/code/project/src/app/components",
-            template: "{{.Target}}"
+            template: ""
         };
 
         let result = find_nearest(&config);
@@ -77,11 +77,11 @@ mod tests {
             file_io: &file_io,
             target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
             starting_path: "/home/user/code/project/src/app/components",
-            template: "{{.Target}}"
+            template: "Target: {{.Target}}, Path: {{.Path}}"
         };
 
         let result = find_nearest(&config);
 
-        assert_eq!(result, Some(String::from("/home/user/code/project/node_modules/.bin")));
+        assert_eq!(result, Some(String::from("Target: /home/user/code/project/node_modules/.bin, Path: /home/user/code/project")));
     }
 }
