@@ -1,10 +1,25 @@
 use mockall::*;
 use mockall::predicate::*;
+use gtmpl_derive::Gtmpl;
 use std::path::Path;
 
 #[automock]
 pub trait FileIO {
     fn exists(&self, path: &str) -> bool;
+}
+
+pub struct Config<'a, F: FileIO> {
+    file_io: &'a F,
+    target_paths: Vec<&'a str>,
+    starting_path: &'a str,
+    template: &'a str,
+}
+
+#[derive(Gtmpl)]
+#[allow(non_snake_case)]
+struct NearestMatch<'a> {
+    Path: &'a str,
+    Target: &'a str,
 }
 
 pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
@@ -17,19 +32,19 @@ pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
         for p in config.target_paths.iter() {
             if let Some(test_path) = cur_path.join(p).to_str() {
                 if config.file_io.exists(&test_path) {
-                    return Some(String::from(test_path));
+                    let nearest_match = NearestMatch {
+                        Path: cur_path.to_str().unwrap(),
+                        Target: test_path
+                    };
+
+                    // let output = gtmpl::template(config.template, &nearest_match);
+                    // return Some(&output.unwrap());
                 }
             }
         }
     }
 
     None
-}
-
-pub struct Config<'a, F: FileIO> {
-    file_io: &'a F,
-    target_paths: Vec<&'a str>,
-    starting_path: &'a str,
 }
 
 #[cfg(test)]
@@ -44,7 +59,8 @@ mod tests {
         let config = Config {
             file_io: &file_io,
             target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
-            starting_path: "/home/user/code/project/src/app/components"
+            starting_path: "/home/user/code/project/src/app/components",
+            template: "{{.Target}}"
         };
 
         let result = find_nearest(&config);
@@ -60,7 +76,8 @@ mod tests {
         let config = Config {
             file_io: &file_io,
             target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
-            starting_path: "/home/user/code/project/src/app/components"
+            starting_path: "/home/user/code/project/src/app/components",
+            template: "{{.Target}}"
         };
 
         let result = find_nearest(&config);
