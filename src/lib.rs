@@ -9,10 +9,10 @@ pub trait FileIO {
 }
 
 pub struct Config<'a, F: FileIO> {
-    file_io: &'a F,
-    target_paths: Vec<&'a str>,
-    starting_path: &'a str,
-    template: &'a str,
+    pub file_io: &'a F,
+    pub target_paths: Vec<String>,
+    pub starting_path: String,
+    pub template: String,
 }
 
 #[derive(Gtmpl)]
@@ -23,7 +23,7 @@ struct NearestMatch {
 }
 
 pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
-    let init_path_buf = Path::new(config.starting_path).join("_");
+    let init_path_buf = Path::new(&config.starting_path).join("_");
     let mut cur_path = init_path_buf.as_path();
 
     while let Some(parent_path) = cur_path.parent() {
@@ -37,7 +37,7 @@ pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
                         Target: String::from(test_path),
                     };
 
-                    let output = gtmpl::template(config.template, nearest_match);
+                    let output = gtmpl::template(&config.template, nearest_match);
                     return Some(output.unwrap());
                 }
             }
@@ -58,9 +58,12 @@ mod tests {
 
         let config = Config {
             file_io: &file_io,
-            target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
-            starting_path: "/home/user/code/project/src/app/components",
-            template: "",
+            target_paths: vec![
+                "node_modules/.bin".to_string(),
+                ".custom_bin_path".to_string(),
+            ],
+            starting_path: "/home/user/code/project/src/app/components".to_string(),
+            template: "".to_string(),
         };
 
         let result = find_nearest(&config);
@@ -77,18 +80,22 @@ mod tests {
 
         let config = Config {
             file_io: &file_io,
-            target_paths: vec!["node_modules/.bin", ".custom_bin_path"],
-            starting_path: "/home/user/code/project/src/app/components",
-            template: "Target: {{.Target}}, Path: {{.Path}}",
+            target_paths: vec![
+                "node_modules/.bin".to_string(),
+                ".custom_bin_path".to_string(),
+            ],
+            starting_path: "/home/user/code/project/src/app/components".to_string(),
+            template: "Target: {{.Target}}, Path: {{.Path}}".to_string(),
         };
 
         let result = find_nearest(&config);
 
         assert_eq!(
             result,
-            Some(String::from(
+            Some(
                 "Target: /home/user/code/project/node_modules/.bin, Path: /home/user/code/project"
-            ))
+                    .to_string()
+            )
         );
     }
 }
