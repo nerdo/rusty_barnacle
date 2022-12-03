@@ -1,5 +1,6 @@
+use barnacle::{find_nearest, Config, FileIO};
 use clap::Parser;
-use std::{env, process, path::Path};
+use std::{env, path::Path, process};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -22,24 +23,23 @@ struct Cli {
 
 struct RealFileIO {}
 
-impl barnacle::FileIO for RealFileIO {
-    fn exists(&self, path: &str) -> bool {
-        Path::new(path).exists()
+impl FileIO for RealFileIO {
+    fn exists(&self, path: &Path) -> bool {
+        path.exists()
     }
 }
 
 fn main() {
     let cli = Cli::parse();
-
     let file_io = RealFileIO {};
-    let config = barnacle::Config {
+    let config = Config {
         file_io: &file_io,
-        starting_path: cli.starting_path,
-        target_paths: cli.target_paths,
-        template: cli.template,
+        starting_path: Path::new(&cli.starting_path),
+        target_paths: cli.target_paths.iter().map(|p| Path::new(p)).collect(),
+        template: &cli.template,
     };
 
-    if let Some(result) = barnacle::find_nearest(&config) {
+    if let Some(result) = find_nearest(&config) {
         println!("{}", result);
         process::exit(0);
     }
