@@ -23,12 +23,9 @@ struct NearestMatch {
 }
 
 pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
-    let init_path_buf = Path::new(&config.starting_path).join("_");
-    let mut cur_path = init_path_buf.as_path();
+    let mut cur_path = Path::new(&config.starting_path);
 
-    while let Some(parent_path) = cur_path.parent() {
-        cur_path = parent_path;
-
+    loop {
         for p in config.target_paths.iter() {
             if let Some(test_path) = cur_path.join(p).to_str() {
                 if config.file_io.exists(&test_path) {
@@ -41,6 +38,12 @@ pub fn find_nearest<F: FileIO>(config: &Config<F>) -> Option<String> {
                     return Some(output.unwrap());
                 }
             }
+        }
+        
+        if let Some(parent_path) = cur_path.parent() {
+            cur_path = parent_path
+        } else {
+            break;
         }
     }
 
