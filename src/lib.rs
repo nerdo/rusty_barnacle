@@ -1,11 +1,18 @@
 use gtmpl_derive::Gtmpl;
-use mockall::predicate::*;
-use mockall::*;
 use std::path::Path;
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mockall::predicate::*;
+    use mockall::*;
+
+    mock! {
+        FileIO {}
+        impl super::FileIO for FileIO {
+            fn exists(&self, path: &Path) -> bool;
+        }
+    }
 
     #[test]
     fn it_returns_none_when_it_does_not_find_a_target_path() {
@@ -56,7 +63,6 @@ mod tests {
     }
 }
 
-#[automock]
 pub trait FileIO {
     fn exists(&self, path: &Path) -> bool;
 }
